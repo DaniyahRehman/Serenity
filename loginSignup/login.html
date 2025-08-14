@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #8d6fb1; }
+        .cardl { height: 32rem; width: 50rem; }
+        @media (max-width: 768px) {
+            .cardl { display: none; }
+            .card { display: flex; align-items: center; justify-content: center; }
+            #leftimg { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container d-flex justify-content-left align-items-center min-vh-100">
+        <img class="cardl p-3 shadow-lg" src="../images/pic 1.webp" alt="">
+        <div class="card p-5 shadow-lg" style="width: 25rem;">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Login</h3>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
+                        </div>
+                        <a href="#" id="forgotPassword" class="text-decoration-none">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <div id="error-message" class="text-danger mt-2"></div>
+                </form>
+                <div class="text-center mt-3">
+                    <p>Don't have an account? <a href="signup.html" class="text-decoration-none">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBOvyc2Wek8xk9Si3kSmmeLyJ7M1FZLV_E",
+            authDomain: "serenity-67d11.firebaseapp.com",
+            projectId: "serenity-67d11",
+            storageBucket: "serenity-67d11.appspot.com",
+            messagingSenderId: "255385403806",
+            appId: "1:255385403806:web:9a749d0cf065a06db1968f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const loginForm = document.getElementById("loginForm");
+        const errorMessage = document.getElementById("error-message");
+        const rememberMe = document.getElementById("rememberMe");
+        const emailInput = document.getElementById("email");
+        const forgotPassword = document.getElementById("forgotPassword");
+
+        // Pre-fill email if stored in localStorage
+        const savedEmail = localStorage.getItem("rememberedEmail");
+        if (savedEmail) {
+            emailInput.value = savedEmail;
+            rememberMe.checked = true;
+        }
+
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+            const password = document.getElementById("password").value.trim();
+            errorMessage.textContent = "";
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+                // Remember Me logic
+                if (rememberMe.checked) {
+                    localStorage.setItem("rememberedEmail", email);
+                } else {
+                    localStorage.removeItem("rememberedEmail");
+                }
+
+                // Redirect after login
+                window.location.href = "../home/home.html";
+
+            } catch (error) {
+                console.error(error);
+                errorMessage.textContent = "Invalid email or password. Please try again.";
+            }
+        });
+
+        // Forgot Password handler
+        forgotPassword.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+            if (!email) {
+                alert("Please enter your email to reset password.");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Password reset email sent! Check your inbox.");
+            } catch (error) {
+                console.error(error);
+                alert("Error sending password reset email: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
