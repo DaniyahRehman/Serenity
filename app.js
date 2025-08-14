@@ -1,6 +1,6 @@
 // app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, updateProfile, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -44,14 +44,6 @@ signupForm.addEventListener("submit", async (e) => {
     }
 
     try {
-        // Check if email is already registered
-        const methods = await fetchSignInMethodsForEmail(auth, email);
-        if (methods.length > 0) {
-            alert("This email is already registered. Redirecting to login page...");
-            window.location.href = "login.html";
-            return;
-        }
-
         // Create new Firebase user
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -63,6 +55,15 @@ signupForm.addEventListener("submit", async (e) => {
         window.location.href = "../home/home.html";
 
     } catch (error) {
-        errorMessage.textContent = error.message;
+        if (error.code === "auth/email-already-in-use") {
+            alert("This email is already registered. Redirecting to login page...");
+            window.location.href = "login.html";
+        } else if (error.code === "auth/invalid-email") {
+            errorMessage.textContent = "Invalid email address.";
+        } else if (error.code === "auth/weak-password") {
+            errorMessage.textContent = "Password should be at least 6 characters.";
+        } else {
+            errorMessage.textContent = error.message;
+        }
     }
 });
